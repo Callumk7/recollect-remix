@@ -1,0 +1,1 @@
+ALTER TABLE "profiles" ALTER COLUMN "date_of_birth" SET DEFAULT '1970-01-01';

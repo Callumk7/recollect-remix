@@ -1,12 +1,19 @@
 {
   "version": "5",
-  "dialect": "sqlite",
+  "dialect": "pg",
   "entries": [
     {
       "idx": 0,
       "version": "5",
-      "when": 1698313989290,
-      "tag": "0000_uneven_rockslide",
+      "when": 1701250073573,
+      "tag": "0000_bizarre_violations",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1701251244212,
+      "tag": "0001_outstanding_thing",
       "breakpoints": true
     }
   ]

@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "36ab84c8-228c-47c8-8088-0c7cb8d67adb",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "62aae2b7-4e23-4bfc-b24d-9b77fe608154",
+  "prevId": "36ab84c8-228c-47c8-8088-0c7cb8d67adb",
   "tables": {
     "collections": {
       "name": "collections",
@@ -481,7 +481,8 @@
           "name": "date_of_birth",
           "type": "date",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "'1970-01-01'"
         }
       },
       "indexes": {},
