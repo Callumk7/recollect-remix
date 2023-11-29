@@ -1,4 +1,4 @@
-import { authenticator } from "@/features/auth/auth.server";
+import { authenticator } from "@/services/auth/auth.server";
 import { ActionFunctionArgs } from "@remix-run/node";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
