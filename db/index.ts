@@ -13,3 +13,5 @@ export const db = singleton("drizzle", () =>
 		schema: { ...usersSchema, ...postsSchema, ...groupsSchema, ...collectionsSchema },
 	}),
 );
+
+export type DB = typeof db;

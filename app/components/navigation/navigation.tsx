@@ -1,5 +1,4 @@
 import { Button, Link } from "@/components/ui/button";
-import { UserWithProfileAndFriends } from "@/types/users";
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import { useLocation } from "@remix-run/react";
 import { Dispatch, SetStateAction } from "react";
@@ -22,6 +21,10 @@ const links = [
   {
     name: "Friends",
     to: "/friends",
+  },
+  {
+    name: "Collections",
+    to: "/collections",
   },
   {
     name: "Dev Feed",

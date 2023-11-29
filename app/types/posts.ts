@@ -5,4 +5,9 @@ interface PostWithAuthor extends Post {
 	author: UserWithProfile;
 }
 
-export type { PostWithAuthor };
+interface PostBatchByDate<P> {
+	date: Date;
+	posts: P[]
+}
+
+export type { PostWithAuthor, PostBatchByDate };

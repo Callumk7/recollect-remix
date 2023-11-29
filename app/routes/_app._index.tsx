@@ -1,64 +1,109 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { FormInput } from "@/components/ui/forms";
 import { auth } from "@/services/auth/helper";
+import { PostWithAuthor } from "@/types/posts";
 import { uuidv4 } from "@/util/generate-uuid";
 import { CalendarDate } from "@internationalized/date";
+import { DiscIcon, TrashIcon } from "@radix-ui/react-icons";
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import { db } from "db";
+import { Collection, collections } from "db/schema/collections";
 import { posts } from "db/schema/posts-notes";
+import { Profile } from "db/schema/users-profiles";
+import { eq } from "drizzle-orm";
+import { typedjson, useTypedLoaderData } from "remix-typedjson";
+import { z } from "zod";
+import { zx } from "zodix";
+
+const newPostSchema = z.object({
+  title: z.string().optional(),
+  body: z.string().min(1),
+});
 
 // Create new Post
 export const action = async ({ request }: ActionFunctionArgs) => {
   const session = await auth(request);
 
-  const formData = await request.formData();
-  const title = formData.get("title")?.toString();
-  const body = formData.get("body")?.toString();
+  if (request.method === "PATCH") {
+    const formData = await request.formData();
+    const collectionId = formData.get("collection")?.toString();
+    const postId = formData.get("postId")?.toString();
+    // update the post's collectionId, and parentType
+    const updatedPost = await db
+      .update(posts)
+      .set({
+        collectionId: collectionId!,
+      })
+      .where(eq(posts.id, postId!))
+      .returning();
 
-  const currentTimestamp = new Date();
-  const currentDate = new CalendarDate(
-    currentTimestamp.getFullYear(),
-    currentTimestamp.getMonth(),
-    currentTimestamp.getDate(),
-  );
+    return json({ success: true, updatedPost });
+  }
 
-  const newPost = await db
-    .insert(posts)
-    .values({
-      id: `post_${uuidv4()}`,
-      title: title!,
-      body: body!,
-      authorId: session.id,
-      day: currentDate.day,
-      month: currentDate.month,
-      year: currentDate.year,
-      entryDate: currentDate.toString(),
-    })
-    .returning();
+  const result = await zx.parseFormSafe(request, newPostSchema);
 
-  return json({ newPost });
+  if (result.success) {
+    const currentTimestamp = new Date();
+    const currentDate = new CalendarDate(
+      currentTimestamp.getFullYear(),
+      currentTimestamp.getMonth() + 1,
+      currentTimestamp.getDate(),
+    );
+
+    const newPost = await db
+      .insert(posts)
+      .values({
+        id: `post_${uuidv4()}`,
+        title: result.data.title,
+        body: result.data.body,
+        authorId: session.id,
+        day: currentDate.day,
+        month: currentDate.month,
+        year: currentDate.year,
+        entryDate: currentDate.toDate("gmt"),
+      })
+      .returning();
+
+    return json({ success: result.success, newPost: newPost });
+  }
+
+  console.log(result.error);
+  return json({ success: result.success, error: result.error });
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const session = await auth(request);
 
-  const allPosts = await db.select().from(posts);
+  const allPosts = await db.query.posts.findMany({
+    with: {
+      author: {
+        with: {
+          profile: true,
+        },
+      },
+    },
+  });
 
-  return json({ allPosts });
+  const allCollections = await db.select().from(collections);
+
+  return typedjson({ allPosts, allCollections, userId: session.id });
 };
 
 export default function AppIndex() {
-  const { allPosts } = useLoaderData<typeof loader>();
+  const { allPosts, allCollections, userId } = useTypedLoaderData<typeof loader>();
   return (
     <Container className="flex flex-col gap-y-6">
-      <div>
+      <div className="flex flex-col gap-2">
         {allPosts.map((post) => (
-          <div key={post.id}>
-            <p>{post.title}</p>
-            <p>{post.body}</p>
-          </div>
+          <PostPreviewCard
+            key={post.id}
+            post={post}
+            collections={allCollections}
+            userId={userId}
+          />
         ))}
       </div>
       <Form method="POST" className="my-8">
@@ -67,5 +112,96 @@ export default function AppIndex() {
         <Button type="submit">Send</Button>
       </Form>
     </Container>
+  );
+}
+
+interface PostPreviewCardProps {
+  post: PostWithAuthor;
+  collections: Collection[];
+  userId: string;
+}
+
+function PostPreviewCard({ post, collections, userId }: PostPreviewCardProps) {
+  const isOrphan = post.collectionId === null;
+  const isAuthor = post.authorId === userId;
+  return (
+    <div className={`${isOrphan ? "bg-ruby1" : ""} rounded-md border border-mauve6 p-2`}>
+      {isAuthor ? <PostOwnerControls post={post} /> : <PostViewerControls post={post} />}
+      <UniversalPostControls post={post} collections={collections} />
+      <p>{post.entryDate.toDateString()}</p>
+      <p>{post.createdAt.toDateString()}</p>
+      <AuthorRow author={post.author.profile} />
+      <p>{post.title}</p>
+      <p>{post.body}</p>
+    </div>
+  );
+}
+
+interface PostOwnerControlsProps {
+  post: PostWithAuthor;
+}
+
+function PostOwnerControls({ post }: PostOwnerControlsProps) {
+  return (
+    <div className="flex w-20 justify-between">
+      <Button variant={"secondary"} size={"icon"}>
+        <TrashIcon />
+      </Button>
+    </div>
+  );
+}
+
+interface PostViewerControlsProps {
+  post: PostWithAuthor;
+}
+
+function PostViewerControls({ post }: PostViewerControlsProps) {
+  return (
+    <div className="flex w-20 justify-between">
+      <Button size={"icon"}>
+        <DiscIcon />
+      </Button>
+    </div>
+  );
+}
+
+interface UniversalPostControlsProps {
+  post: PostWithAuthor;
+  collections: Collection[];
+}
+
+function UniversalPostControls({ post, collections }: UniversalPostControlsProps) {
+  return (
+    <div>
+      <Form method="PATCH">
+        <select name="collection">
+          {collections.map((collection) => (
+            <option key={collection.id} value={collection.id}>
+              {collection.title}
+            </option>
+          ))}
+        </select>
+        <input type="hidden" name="postId" value={post.id} />
+        <Button type="submit">Add to Collection</Button>
+      </Form>
+    </div>
+  );
+}
+
+interface AuthorRowProps {
+  author: Profile;
+}
+
+function AuthorRow({ author }: AuthorRowProps) {
+  return (
+    <div className="flex items-center gap-x-3">
+      <Avatar>
+        <AvatarImage src={author.profilePictureUrl!} />
+        <AvatarFallback>BT</AvatarFallback>
+      </Avatar>
+      <Link to={`/wall/${author.id}`} className="font-bold text-ruby9 hover:underline">
+        {author.userName}
+      </Link>
+    </div>
   );
 }

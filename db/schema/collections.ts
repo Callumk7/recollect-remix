@@ -15,7 +15,7 @@ export const collections = pgTable("collections", {
 	day: integer("day").notNull(),
 	month: integer("month").notNull(),
 	year: integer("year").notNull(),
-	entryDate: date("entry_date").notNull().defaultNow(),
+	entryDate: date("entry_date", { mode: "date" }).notNull().defaultNow(),
 });
 
 export const collectionsRelations = relations(collections, ({ one, many }) => ({
@@ -28,4 +28,6 @@ export const collectionsRelations = relations(collections, ({ one, many }) => ({
 }));
 
 type Collection = typeof collections.$inferSelect;
-export type { Collection };
+type CollectionInsert = typeof collections.$inferInsert;
+
+export type { Collection, CollectionInsert };

@@ -25,7 +25,7 @@ export const posts = pgTable("posts", {
 	day: integer("day").notNull(),
 	month: integer("month").notNull(),
 	year: integer("year").notNull(),
-	entryDate: date("entry_date").notNull().defaultNow(),
+	entryDate: date("entry_date", { mode: "date" }).notNull().defaultNow(),
 	body: text("body").notNull(),
 	collectionId: text("collection_id"),
 	authorId: text("author_id").notNull(),
@@ -57,7 +57,12 @@ export const postsSavedByUsers = pgTable(
 	}),
 );
 
-export const parentTypeEnum = pgEnum("parent_type", ["note", "page", "group", "post"]);
+export const parentTypeEnum = pgEnum("parent_type", [
+	"note",
+	"collection",
+	"group",
+	"post",
+]);
 
 // Notes are to be thought of as the main currency of communication on the platform, akin to tweets.
 // They are short form communication that be be cross posted and used as messages, comments and feeds.
@@ -132,4 +137,7 @@ export const subNotesRelations = relations(subNotes, ({ one }) => ({
 type Post = typeof posts.$inferSelect;
 type Note = typeof notes.$inferSelect;
 
-export type { Post, Note };
+type PostInsert = typeof posts.$inferInsert;
+type NoteInsert = typeof notes.$inferInsert;
+
+export type { Post, Note, PostInsert, NoteInsert };
