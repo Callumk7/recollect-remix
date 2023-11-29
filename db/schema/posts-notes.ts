@@ -27,7 +27,7 @@ export const posts = pgTable("posts", {
 	year: integer("year").notNull(),
 	entryDate: date("entry_date").notNull().defaultNow(),
 	body: text("body").notNull(),
-	pageId: text("page_id"),
+	collectionId: text("collection_id"),
 	authorId: text("author_id").notNull(),
 	isPrivate: boolean("is_private").notNull().default(true),
 	likes: integer("likes").default(0),
@@ -39,7 +39,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
 		references: [users.id],
 	}),
 	collection: one(collections, {
-		fields: [posts.pageId],
+		fields: [posts.collectionId],
 		references: [collections.id],
 	}),
 	savedBy: many(postsSavedByUsers),
@@ -68,7 +68,7 @@ export const notes = pgTable("notes", {
 	parentType: parentTypeEnum("parent_type"),
 	parentNoteId: text("parent_note_id"),
 	groupId: text("group_id"),
-	pageId: text("page_id"),
+	collectionId: text("collection_id"),
 	postId: text("post_id"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -91,7 +91,7 @@ export const notesRelations = relations(notes, ({ one, many }) => ({
 		references: [groups.id],
 	}),
 	collection: one(collections, {
-		fields: [notes.pageId],
+		fields: [notes.collectionId],
 		references: [collections.id],
 	}),
 	post: one(posts, {

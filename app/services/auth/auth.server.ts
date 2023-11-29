@@ -2,13 +2,12 @@ import { Authenticator } from "remix-auth";
 import { FormStrategy } from "remix-auth-form";
 import { sessionStorage } from "./session.server";
 import invariant from "tiny-invariant";
+import { eq } from "drizzle-orm";
 import { db } from "db";
-import { and, eq } from "drizzle-orm";
-import { users } from "db/schema";
+import { users } from "db/schema/users-profiles";
 
 export interface UserData {
-	id: number;
-	fullName: string | null;
+	id: string;
 	email: string;
 }
 
@@ -18,9 +17,6 @@ authenticator.use(
 	new FormStrategy(async ({ form }) => {
 		const email = form.get("email");
 		const password = form.get("password");
-
-		// WARN: these invariants didn't throw, for some reason, I should probably test these out to make sure that I fully
-		// understand how they are supposed to work...
 
 		invariant(typeof email === "string", "email must be a string");
 		invariant(email.length > 0, "email must not be empty");
@@ -35,9 +31,13 @@ authenticator.use(
 );
 
 const login = async (email: string, password: string) => {
+	console.log(`${email} and ${password}`);
 	const foundUser = await db.query.users.findFirst({
-		where: and(eq(users.email, email), eq(users.password, password)),
+		where: eq(users.email, email),
 	});
+
+	console.log("no we are here");
+	console.log(`found user ${foundUser?.email}`);
 
 	invariant(foundUser, "No user found");
 	console.log(foundUser.email);
