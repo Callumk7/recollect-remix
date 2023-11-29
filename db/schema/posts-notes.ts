@@ -128,3 +128,8 @@ export const subNotesRelations = relations(subNotes, ({ one }) => ({
 		relationName: "child_note",
 	}),
 }));
+
+type Post = typeof posts.$inferSelect;
+type Note = typeof notes.$inferSelect;
+
+export type { Post, Note };

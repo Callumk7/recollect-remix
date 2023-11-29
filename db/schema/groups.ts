@@ -29,3 +29,6 @@ export const usersToGroups = pgTable(
 		pk: primaryKey(t.userId, t.groupId),
 	}),
 );
+
+type Group = typeof groups.$inferSelect;
+export type { Group };
