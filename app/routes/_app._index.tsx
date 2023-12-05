@@ -1,3 +1,4 @@
+import { CreatePostForm } from "@/components/posts/create-post-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -25,6 +26,7 @@ import { typedjson, useTypedLoaderData } from "remix-typedjson";
 import { z } from "zod";
 import { zx } from "zodix";
 
+// TODO: schemas should exist in their own file
 const newPostSchema = z.object({
   title: z.string().optional(),
   body: z.string().min(1),
@@ -103,6 +105,7 @@ export default function AppIndex() {
   const { allPosts, allCollections, userId } = useTypedLoaderData<typeof loader>();
   return (
     <Container className="flex flex-col gap-y-6">
+      <CreatePostForm />
       <div className="flex flex-col gap-2">
         {allPosts.map((post) => (
           <PostPreviewCard
@@ -113,11 +116,6 @@ export default function AppIndex() {
           />
         ))}
       </div>
-      <Form method="POST" className="my-8">
-        <FormInput name="title" label="title" />
-        <FormInput name="body" label="body" />
-        <Button type="submit">Send</Button>
-      </Form>
     </Container>
   );
 }
