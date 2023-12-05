@@ -18,7 +18,8 @@ const buttonVariants = cva(
       size: {
         sm: "px-2 py-1 text-sm",
         md: "px-2 py-1",
-        icon: "w-8 h-8 p-1",
+        icon: "w-9 h-9 p-1",
+        largeIcon: "w-11 h-11 p-1"
       },
     },
     defaultVariants: {
@@ -74,5 +75,8 @@ const NavLink = forwardRef<HTMLAnchorElement, FullLinkProps>(
   },
 );
 NavLink.displayName = "NavLink";
+
+// Button Row
+
 
 export { Button, Link, NavLink };

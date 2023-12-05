@@ -6,7 +6,14 @@ import { auth } from "@/services/auth/helper";
 import { PostWithAuthor } from "@/types/posts";
 import { uuidv4 } from "@/util/generate-uuid";
 import { CalendarDate } from "@internationalized/date";
-import { DiscIcon, TrashIcon } from "@radix-ui/react-icons";
+import {
+  BookmarkIcon,
+  ChatBubbleIcon,
+  DiscIcon,
+  HeartIcon,
+  Share1Icon,
+  TrashIcon,
+} from "@radix-ui/react-icons";
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { Form, Link } from "@remix-run/react";
 import { db } from "db";
@@ -125,14 +132,20 @@ function PostPreviewCard({ post, collections, userId }: PostPreviewCardProps) {
   const isOrphan = post.collectionId === null;
   const isAuthor = post.authorId === userId;
   return (
-    <div className={`${isOrphan ? "bg-ruby1" : ""} rounded-md border border-mauve6 p-2`}>
-      {isAuthor ? <PostOwnerControls post={post} /> : <PostViewerControls post={post} />}
-      <UniversalPostControls post={post} collections={collections} />
-      <p>{post.entryDate.toDateString()}</p>
-      <p>{post.createdAt.toDateString()}</p>
-      <AuthorRow author={post.author.profile} />
-      <p>{post.title}</p>
-      <p>{post.body}</p>
+    <div className={`${isOrphan ? "bg-ruby1" : ""} rounded-md border border-mauve6`}>
+      <div className="flex flex-col gap-y-1 p-3">
+        <p className="text-sm text-mauve8">{post.entryDate.toDateString()}</p>
+        <AuthorRow author={post.author.profile} userId={userId} />
+        <p className="font-lg font-bold">{post.title}</p>
+        <p>{post.body}</p>
+      </div>
+      <div className="border-t px-2 py-1">
+        {isAuthor ? (
+          <PostOwnerControls post={post} />
+        ) : (
+          <PostViewerControls post={post} />
+        )}
+      </div>
     </div>
   );
 }
@@ -143,9 +156,21 @@ interface PostOwnerControlsProps {
 
 function PostOwnerControls({ post }: PostOwnerControlsProps) {
   return (
-    <div className="flex w-20 justify-between">
-      <Button variant={"secondary"} size={"icon"}>
+    <div className="flex gap-x-2">
+      <Button variant={"ghost"} size={"largeIcon"}>
         <TrashIcon />
+      </Button>
+      <Button variant={"ghost"} size={"largeIcon"}>
+        <ChatBubbleIcon />
+      </Button>
+      <Button variant={"ghost"} size={"largeIcon"}>
+        <HeartIcon />
+      </Button>
+      <Button variant={"ghost"} size={"largeIcon"}>
+        <BookmarkIcon />
+      </Button>
+      <Button variant={"ghost"} size={"largeIcon"}>
+        <Share1Icon />
       </Button>
     </div>
   );
@@ -190,18 +215,23 @@ function UniversalPostControls({ post, collections }: UniversalPostControlsProps
 
 interface AuthorRowProps {
   author: Profile;
+  userId: string;
 }
 
-function AuthorRow({ author }: AuthorRowProps) {
+function AuthorRow({ author, userId }: AuthorRowProps) {
+  const isUser = userId === author.id;
   return (
-    <div className="flex items-center gap-x-3">
+    <div className="flex items-center gap-x-3 py-3">
       <Avatar>
         <AvatarImage src={author.profilePictureUrl!} />
         <AvatarFallback>BT</AvatarFallback>
       </Avatar>
-      <Link to={`/wall/${author.id}`} className="font-bold text-ruby9 hover:underline">
-        {author.userName}
-      </Link>
+      <div className="flex gap-x-2">
+        <Link to={`/wall/${author.id}`} className="font-bold text-ruby9 hover:underline">
+          {author.userName}
+        </Link>
+        {!isUser ? null : <Button size={"sm"}>Add as friend</Button>}
+      </div>
     </div>
   );
 }

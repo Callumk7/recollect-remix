@@ -1,7 +1,7 @@
 import { Navigation } from "@/components/navigation/navigation";
 import { auth } from "@/services/auth/helper";
 import { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Outlet } from "@remix-run/react";
+import { Link, Outlet } from "@remix-run/react";
 import { typedjson, useTypedLoaderData } from "remix-typedjson";
 import { useState } from "react";
 import { Container } from "@/components/ui/container";
@@ -62,10 +62,10 @@ interface SidebarProps {
 function Sidebar({ postsOrganisedByDate }: SidebarProps) {
   return (
     <div className="fixed h-screen w-64 bg-mauve12 px-2 py-5">
-      <div>
+      <div className="flex flex-col gap-y-9">
         {postsOrganisedByDate.map((batch) => (
           <div key={batch.date.getDate()} className="text-mauve1 flex flex-col gap-y-1">
-            <div className="flex justify-between font-bold">
+            <div className="flex justify-between text-lg underline font-bold">
               {batch.date.toDateString()}
               <div className="text-ruby7">{batch.posts.length}</div>
             </div>
@@ -84,10 +84,10 @@ interface SideBarPostPreviewProps {
 }
 function SideBarPostPreview({post}: SideBarPostPreviewProps) {
   return (
-    <div>
+    <Link to={`/posts/${post.id}`} className="hover:bg-ruby12 transition-colors ease-in-out">
       <h1 className="font-bold text-inherit">{post.title}</h1>
       <p className="text-mauve4 text-sm font-light">{post.body.slice(0, 100)}</p>
-      <Separator />
-    </div>
+      <Separator className="border-cyan9" />
+    </Link>
   )
 }
