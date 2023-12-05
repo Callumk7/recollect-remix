@@ -220,15 +220,19 @@ interface AuthorRowProps {
 
 function AuthorRow({ author, userId }: AuthorRowProps) {
   const isUser = userId === author.id;
+  const fullName = `${author.firstName} ${author.lastName}`;
   return (
     <div className="flex items-center gap-x-3 py-3">
       <Avatar>
         <AvatarImage src={author.profilePictureUrl!} />
         <AvatarFallback>BT</AvatarFallback>
       </Avatar>
-      <div className="flex gap-x-2">
+      <div className="flex gap-x-3 items-center">
         <Link to={`/wall/${author.id}`} className="font-bold text-ruby9 hover:underline">
-          {author.userName}
+          {fullName}
+        </Link>
+        <Link to={`/wall/${author.id}`} className="text-mauve10 text-sm">
+          {`@${author.userName}`}
         </Link>
         {!isUser ? null : <Button size={"sm"}>Add as friend</Button>}
       </div>
